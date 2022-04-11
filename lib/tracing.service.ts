@@ -53,6 +53,7 @@ export class TracingService<TPayload = unknown, TEvent extends string = any> {
         traceId: options?.parent?.traceId ?? this.idFactory.newTraceId(),
         parentSpanId: options?.parent?.spanId,
         spanId: this.idFactory.newSpanId(),
+        referenceId: options?.parent?.referenceId,
         startTime: options?.startTime ?? Date.now(),
         tags: {
           ...this.tags,
