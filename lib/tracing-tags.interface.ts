@@ -18,10 +18,18 @@ export interface RpcTracingTags {
   'rpc.pattern'?: string;
 }
 
+export interface DatabaseTracingTags {
+  'db.instance'?: string;
+  'db.statement'?: string;
+  'db.type'?: string;
+  'db.user'?: string;
+}
+
 export type StandardTracingTags = CommonTracingTags &
   SpanTracingTags &
   HttpTracingTags &
-  RpcTracingTags;
+  RpcTracingTags &
+  DatabaseTracingTags;
 
 export type CustomTracingTags = Record<string, any>;
 
