@@ -149,7 +149,7 @@ export class TracingSpan<TPayload = unknown, TEvent extends string = any> {
     return this;
   }
 
-  public finish(finishTime?: number): Promise<void> {
+  public finish(finishTime?: number): Promise<void> | void {
     this.#context.finishTime = finishTime ?? Date.now();
     return this.onFinish(this.context, this.#logs);
   }
