@@ -13,17 +13,41 @@ type RequestInfo = {
   data?: unknown;
 };
 
+export type TracingHttpClientConfig<TConfig> = {
+  tracingService: TracingService;
+  tracingInjector: TracingInjector<HttpRequestHeaders>;
+  tracingContextRef: TracingContextRef;
+  operation?: string;
+  createConfig?: () => TConfig;
+  getUrl?: (url: string, config?: TConfig) => string;
+  getErrorStatusCode?: (error: any) => number;
+};
+
 export class TracingHttpClient<
   TConfig extends HttpRequestConfig = HttpRequestConfig,
 > implements HttpClient<TConfig>
 {
+  private readonly tracingService: TracingService;
+  private readonly tracingInjector: TracingInjector<HttpRequestHeaders>;
+  private readonly tracingContextRef: TracingContextRef;
+  private readonly operation: string;
+  private readonly createConfig: () => TConfig;
+  private readonly getUrl: (url: string, config?: TConfig) => string;
+  private readonly getErrorStatusCode: (error: any) => number;
+
   constructor(
     private readonly client: HttpClient<TConfig>,
-    private readonly tracingService: TracingService,
-    private readonly tracingInjector: TracingInjector<HttpRequestHeaders>,
-    private readonly tracingContextRef: TracingContextRef,
-    private readonly operation = 'http-request',
-  ) {}
+    config: TracingHttpClientConfig<TConfig>,
+  ) {
+    this.tracingService = config.tracingService;
+    this.tracingInjector = config.tracingInjector;
+    this.tracingContextRef = config.tracingContextRef;
+    this.operation = config.operation ?? 'http-request';
+    this.createConfig = config.createConfig ?? this.createConfigFallback;
+    this.getUrl = config.getUrl ?? this.getUrlFallback;
+    this.getErrorStatusCode =
+      config.getErrorStatusCode ?? this.getErrorStatusCodeFallback;
+  }
 
   private async traceRequest<TResponse extends HttpResponse<unknown>>(
     info: RequestInfo,
@@ -50,9 +74,9 @@ export class TracingHttpClient<
           actualConfig.headers,
         );
         request = createRequest(actualConfig);
-      } catch (err) {
-        span.addTags({ error: true }).log('http.request.error', err);
-        throw err;
+      } catch (error) {
+        span.addTags({ error: true }).log('http.request.error', error);
+        throw error;
       }
 
       try {
@@ -73,7 +97,7 @@ export class TracingHttpClient<
         }
         span
           .addTags({
-            'http.status_code': error.status ?? error.code ?? 500,
+            'http.status_code': this.getErrorStatusCode(error),
             error: true,
           })
           .log('http.response.error', error);
@@ -84,16 +108,20 @@ export class TracingHttpClient<
     }
   }
 
-  protected createConfig(): TConfig {
+  protected createConfigFallback(): TConfig {
     return {} as TConfig;
   }
 
-  protected getUrl(url: string, config?: any): string {
+  protected getUrlFallback(url: string, config?: any): string {
     const baseUrl = config?.baseURL || config?.baseUrl;
     if (baseUrl) {
       return baseUrl + url;
     }
     return url;
+  }
+
+  protected getErrorStatusCodeFallback(error: any): number {
+    return error.status ?? error.code ?? 500;
   }
 
   get<TData = any, TResponse extends HttpResponse<TData> = HttpResponse<TData>>(
@@ -103,7 +131,7 @@ export class TracingHttpClient<
     return this.traceRequest(
       {
         url,
-        method: 'get',
+        method: 'GET',
       },
       config,
       (newConfig) => this.client.get<TData, TResponse>(url, newConfig),
@@ -117,7 +145,7 @@ export class TracingHttpClient<
     return this.traceRequest(
       {
         url,
-        method: 'delete',
+        method: 'DELETE',
       },
       config,
       (newConfig) => this.client.delete<TData, TResponse>(url, newConfig),
@@ -131,7 +159,7 @@ export class TracingHttpClient<
     return this.traceRequest(
       {
         url,
-        method: 'head',
+        method: 'HEAD',
       },
       config,
       (newConfig) => this.client.head<TData, TResponse>(url, newConfig),
@@ -145,7 +173,7 @@ export class TracingHttpClient<
     return this.traceRequest(
       {
         url,
-        method: 'options',
+        method: 'OPTIONS',
       },
       config,
       (newConfig) => this.client.options<TData, TResponse>(url, newConfig),
@@ -159,7 +187,7 @@ export class TracingHttpClient<
     return this.traceRequest(
       {
         url,
-        method: 'post',
+        method: 'POST',
         data,
       },
       config,
@@ -175,7 +203,7 @@ export class TracingHttpClient<
     return this.traceRequest(
       {
         url,
-        method: 'put',
+        method: 'PUT',
         data,
       },
       config,
@@ -190,7 +218,7 @@ export class TracingHttpClient<
     return this.traceRequest(
       {
         url,
-        method: 'patch',
+        method: 'PATCH',
         data,
       },
       config,
