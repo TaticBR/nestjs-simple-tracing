@@ -1,5 +1,5 @@
 import { TracingSpanContext } from './tracing-span-context.interface';
-import { TracingSpanLog } from './tracing-span-log.interface';
+import { TracingSpanEvent } from './tracing-span-event.interface';
 
 export interface TracingReporter<
   TPayload = unknown,
@@ -9,12 +9,12 @@ export interface TracingReporter<
 
   onLog(
     context: TracingSpanContext,
-    log: TracingSpanLog<TPayload, TEvent>,
+    event: TracingSpanEvent<TPayload, TEvent>,
   ): Promise<void> | void;
 
   onFinish(
     context: TracingSpanContext,
-    logs: TracingSpanLog<TPayload, TEvent>[],
+    events: TracingSpanEvent<TPayload, TEvent>[],
   ): Promise<void> | void;
 }
 

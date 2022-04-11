@@ -1,4 +1,4 @@
-export interface TracingSpanLog<
+export interface TracingSpanEvent<
   TPayload = unknown,
   TEvent extends string = any,
 > {

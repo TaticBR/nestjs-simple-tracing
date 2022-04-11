@@ -9,7 +9,7 @@ import {
   TracingReporter,
 } from './tracing-reporter.interface';
 import { TracingSpanContext } from './tracing-span-context.interface';
-import { TracingSpanLog } from './tracing-span-log.interface';
+import { TracingSpanEvent } from './tracing-span-event.interface';
 import { TracingTags } from './tracing-tags.interface';
 import { TracingConfig, TracingIdFactory } from './tracing.config';
 
@@ -93,26 +93,26 @@ export class TracingService<TPayload = unknown, TEvent extends string = any> {
 
   private async onSpanLog(
     context: TracingSpanContext,
-    log: TracingSpanLog<TPayload, TEvent>,
+    event: TracingSpanEvent<TPayload, TEvent>,
   ): Promise<void> {
     if (this.reporter) {
-      await this.reporter.onLog(context, log);
+      await this.reporter.onLog(context, event);
     }
   }
 
   private async onSpanFinish(
     context: TracingSpanContext,
-    logs: TracingSpanLog<TPayload, TEvent>[],
+    events: TracingSpanEvent<TPayload, TEvent>[],
   ): Promise<void> {
     if (this.reporter) {
-      await this.reporter.onFinish(context, logs);
+      await this.reporter.onFinish(context, events);
     }
   }
 }
 
 export class TracingSpan<TPayload = unknown, TEvent extends string = any> {
   readonly #context: TracingSpanContext;
-  readonly #logs: TracingSpanLog<TPayload, TEvent>[] = [];
+  readonly #events: TracingSpanEvent<TPayload, TEvent>[] = [];
 
   constructor(
     context: TracingSpanContext,
@@ -128,6 +128,10 @@ export class TracingSpan<TPayload = unknown, TEvent extends string = any> {
     return this.#context;
   }
 
+  public get events(): readonly TracingSpanEvent<TPayload, TEvent>[] {
+    return this.#events;
+  }
+
   public addTags(tags: TracingTags): this {
     if (!this.#context.tags) {
       this.#context.tags = {};
@@ -140,18 +144,18 @@ export class TracingSpan<TPayload = unknown, TEvent extends string = any> {
 
   public log(event: TEvent, payload?: TPayload, time?: number): this {
     const eventTime = time ?? Date.now();
-    const log: TracingSpanLog<TPayload, TEvent> = {
+    const log: TracingSpanEvent<TPayload, TEvent> = {
       event,
       payload,
       eventTime,
     };
-    this.#logs.push(log);
+    this.#events.push(log);
     this.onLog(this.context, log);
     return this;
   }
 
   public finish(finishTime?: number): Promise<void> | void {
     this.#context.finishTime = finishTime ?? Date.now();
-    return this.onFinish(this.context, this.#logs);
+    return this.onFinish(this.context, this.#events);
   }
 }
