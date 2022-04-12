@@ -1,6 +1,6 @@
 export interface TracingContext {
   traceId: string;
-  parentSpanId?: string;
   spanId: string;
+  parentId?: string;
   referenceId?: string;
 }
