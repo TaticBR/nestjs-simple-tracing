@@ -8,4 +8,5 @@ export * from './tracing-span-kind.enum';
 export * from './tracing-tags.interface';
 export * from './tracing.config';
 export * from './tracing.service';
+export * from './format';
 export * from './nest';
