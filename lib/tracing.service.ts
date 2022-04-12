@@ -74,6 +74,7 @@ export class TracingService<TPayload = unknown, TEvent extends string = any> {
     return {
       ...partialContext,
       traceId: partialContext?.traceId ?? this.idFactory.newTraceId(),
+      spanId: partialContext?.spanId ?? this.idFactory.newSpanId(),
     };
   }
 
