@@ -1,5 +1,4 @@
 export * from './abstract-http-tracing-adapter';
-export * from './abstract-http-tracing-extractor';
 export * from './http-tracing-reference-extractor';
 export * from './http-tracing-logger';
 export * from './http-tracing.decorator';
