@@ -1,17 +1,45 @@
 import { applyDecorators, ExecutionContext } from '@nestjs/common';
-import { Tracing } from '..';
-import { TracingExtractor } from '../..';
+import {
+  AdapterOnlyOptions,
+  ExtractorAndAdapterOptions,
+  ExtractorOnlyOptions,
+  Tracing,
+  TracingDecoratorOptions,
+  TracingLoggerOptions,
+} from '..';
 import { RpcTracingLogger } from './rpc-tracing-logger';
 
-export function RpcTracing(
-  extractor:
-    | TracingExtractor<ExecutionContext>
-    | TracingExtractor<ExecutionContext>[],
+export function RpcTracing(): ReturnType<typeof applyDecorators>;
+
+export function RpcTracing<TCarrier extends ExecutionContext>(
+  options: AdapterOnlyOptions<TCarrier> & TracingLoggerOptions,
+): ReturnType<typeof applyDecorators>;
+
+export function RpcTracing<TCarrier extends ExecutionContext>(
+  options: ExtractorOnlyOptions<TCarrier> & TracingLoggerOptions,
+): ReturnType<typeof applyDecorators>;
+
+export function RpcTracing<TCarrier>(
+  options: ExtractorAndAdapterOptions<TCarrier> & TracingLoggerOptions,
+): ReturnType<typeof applyDecorators>;
+
+export function RpcTracing<TCarrier>(
+  options: TracingLoggerOptions,
+): ReturnType<typeof applyDecorators>;
+
+export function RpcTracing<TCarrier = ExecutionContext>(
+  options?: TracingDecoratorOptions<TCarrier>,
 ) {
-  return applyDecorators(
-    Tracing({
-      extractor,
-      logger: new RpcTracingLogger(),
-    }),
-  );
+  if (!options) {
+    return applyDecorators(
+      Tracing({
+        logger: new RpcTracingLogger(),
+      }),
+    );
+  }
+
+  if (!options.logger) {
+    options.logger = new RpcTracingLogger();
+  }
+  return applyDecorators(Tracing(options));
 }
