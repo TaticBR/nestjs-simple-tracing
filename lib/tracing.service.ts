@@ -5,7 +5,7 @@ import { TracingExtractor } from './tracing-extractor.interface';
 import { TracingInjector } from './tracing-injector.interface';
 import {
   TracingFinishCallback,
-  TracingLogCallback,
+  TracingEventCallback,
   TracingReporter,
 } from './tracing-reporter.interface';
 import { TracingSpanContext } from './tracing-span-context.interface';
@@ -61,7 +61,7 @@ export class TracingService<TPayload = unknown, TEvent extends string = any> {
         },
       },
       this.onSpanStart.bind(this),
-      this.onSpanLog.bind(this),
+      this.onSpanEvent.bind(this),
       this.onSpanFinish.bind(this),
     );
   }
@@ -92,12 +92,12 @@ export class TracingService<TPayload = unknown, TEvent extends string = any> {
     }
   }
 
-  private async onSpanLog(
+  private async onSpanEvent(
     context: TracingSpanContext,
     event: TracingSpanEvent<TPayload, TEvent>,
   ): Promise<void> {
     if (this.reporter) {
-      await this.reporter.onLog(context, event);
+      await this.reporter.onEvent(context, event);
     }
   }
 
@@ -118,7 +118,7 @@ export class TracingSpan<TPayload = unknown, TEvent extends string = any> {
   constructor(
     context: TracingSpanContext,
     onStart: TracingStartCallback,
-    private readonly onLog: TracingLogCallback<TPayload, TEvent>,
+    private readonly onEvent: TracingEventCallback<TPayload, TEvent>,
     private readonly onFinish: TracingFinishCallback<TPayload, TEvent>,
   ) {
     this.#context = context;
@@ -146,12 +146,12 @@ export class TracingSpan<TPayload = unknown, TEvent extends string = any> {
   public log(event: TEvent, payload?: TPayload, time?: number): this {
     const eventTime = time ?? Date.now();
     const log: TracingSpanEvent<TPayload, TEvent> = {
-      event,
+      name: event,
       payload,
-      eventTime,
+      time: eventTime,
     };
     this.#events.push(log);
-    this.onLog(this.context, log);
+    this.onEvent(this.context, log);
     return this;
   }
 

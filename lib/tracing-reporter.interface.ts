@@ -7,7 +7,7 @@ export interface TracingReporter<
 > {
   onStart(context: TracingSpanContext): Promise<void> | void;
 
-  onLog(
+  onEvent(
     context: TracingSpanContext,
     event: TracingSpanEvent<TPayload, TEvent>,
   ): Promise<void> | void;
@@ -20,10 +20,10 @@ export interface TracingReporter<
 
 export type TracingStartCallback = TracingReporter['onStart'];
 
-export type TracingLogCallback<
+export type TracingEventCallback<
   TPayload = unknown,
   TEvent extends string = any,
-> = TracingReporter<TPayload, TEvent>['onLog'];
+> = TracingReporter<TPayload, TEvent>['onEvent'];
 
 export type TracingFinishCallback<
   TPayload = unknown,

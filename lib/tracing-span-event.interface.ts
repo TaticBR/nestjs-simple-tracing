@@ -2,7 +2,7 @@ export interface TracingSpanEvent<
   TPayload = unknown,
   TEvent extends string = any,
 > {
-  event: TEvent;
-  eventTime: number;
+  name: TEvent;
+  time: number;
   payload?: TPayload;
 }
