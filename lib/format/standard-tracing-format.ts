@@ -34,7 +34,7 @@ export class StandardTracingExtractor
 }
 
 export class StandardTracingInjector implements TracingInjector<TracingSetter> {
-  public static readonly INSTANCE = new StandardTracingInjector();
+  private static readonly INSTANCE = new StandardTracingInjector();
 
   private constructor() {}
 
