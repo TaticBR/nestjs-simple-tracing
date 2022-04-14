@@ -54,7 +54,13 @@ export class AppModule {}
 
 ### Decorators
 
-Use the `@HttpTracing()` or `@RpcTracing()` decorators to enable trace extraction and logging. Tracing decorators can be controller-scoped or method-scoped.
+Use the `@HttpTracing()` or `@RpcTracing()` decorators to enable trace extraction and logging.
+
+Extraction and logging can be individualy disabled using the `@DisableTracingExtractor()` and `@DisableTracingLogger()` decorators.
+
+Additionaly, a span can be associated with a resource using the `@UseHttpTracingReferenceExtractor()` and `@RpcTracingReferenceExtractor()` decorators.
+
+> **NOTE**: Tracing decorators can be controller-scoped or method-scoped.
 
 Use the `@HttpTracing()` decorator for HTTP/REST handlers:
 
@@ -64,7 +70,7 @@ import { HttpTracing, UseHttpTracingReferenceExtractor } from '@taticbr/nestjs-s
 import { Request } from 'express';
 
 @Controller()
-@HttpTracing(MY_HTTP_TRACING_FORMAT)
+@HttpTracing()
 export class CatsController {
   @Get(':id')
   @UseHttpTracingReferenceExtractor((request: Request) => request.params.id) // optional
@@ -79,12 +85,12 @@ Use the `@RpcTracing()` decorator for Microservices/RPC handlers:
 ```typescript
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
-import { RpcTracing } from '@taticbr/nestjs-simple-tracing';
+import { RpcTracing, KafkaHeadersExtractorRpcTracingAdapter } from '@taticbr/nestjs-simple-tracing';
 
 @Controller()
 export class UserController {
   @EventPattern('user_created')
-  @RpcTracing(MY_RPC_TRACING_FORMAT)
+  @RpcTracing({ adapter: KafkaHeadersExtractorRpcTracingAdapter.getInstance() })
   async handleUserCreated(data: any) {
     // business logic
   }
@@ -109,7 +115,8 @@ export class CatsService {
 
 To access the current tracing context, inject the `TRACING_CONTEXT` object
 
-> **NOTE:** `TRACING_CONTEXT` is a request-scoped provider and can have an impact on application performance. See [NestJS - Injection scopes](https://docs.nestjs.com/fundamentals/injection-scopes#performance)
+> **NOTE:** `TRACING_CONTEXT` is a request-scoped provider and can have an impact on application performance.
+> See: [NestJS - Injection scopes](https://docs.nestjs.com/fundamentals/injection-scopes#performance)
 
 ```typescript
 import { Injectable, Inject } from '@nestjs/common';
