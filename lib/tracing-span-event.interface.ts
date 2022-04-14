@@ -1,4 +1,6 @@
-export type TracingSpanEvent<TEvent extends Record<string, unknown> = any> = {
+import { TracingEvents } from './tracing-events.interface';
+
+export type TracingSpanEvent<TEvent extends TracingEvents = TracingEvents> = {
   [TName in keyof TEvent]: {
     name: TName;
     time: number;

@@ -1,4 +1,5 @@
 export * from './tracing-context.interface';
+export * from './tracing-events.interface';
 export * from './tracing-extractor.interface';
 export * from './tracing-injector.interface';
 export * from './tracing-reporter.interface';

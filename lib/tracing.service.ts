@@ -1,6 +1,11 @@
 import { randomBytes } from 'crypto';
 import { TracingStartCallback } from '.';
 import { TracingContext } from './tracing-context.interface';
+import {
+  CustomTracingEvents,
+  StandardTracingEvents,
+  TracingEvents,
+} from './tracing-events.interface';
 import { TracingExtractor } from './tracing-extractor.interface';
 import { TracingInjector } from './tracing-injector.interface';
 import {
@@ -29,13 +34,13 @@ export type TracingSpanOptions = {
   tags?: TracingTags;
 };
 
-export class TracingService<TEvent extends Record<string, unknown> = any> {
+export class TracingService<TEvent extends TracingEvents = TracingEvents> {
   private readonly serviceName: string;
   private readonly idFactory: TracingIdFactory;
   private readonly reporter?: TracingReporter<TEvent>;
   private readonly tags: TracingTags;
 
-  constructor(config: TracingConfig) {
+  constructor(config: TracingConfig<TEvent>) {
     this.serviceName = config.serviceName;
     this.idFactory = config.idFactory ?? DEFAULT_ID_FACTORY;
     this.reporter = config.reporter;
@@ -111,7 +116,7 @@ export class TracingService<TEvent extends Record<string, unknown> = any> {
   }
 }
 
-export class TracingSpan<TEvent extends Record<string, unknown> = any> {
+export class TracingSpan<TEvent extends TracingEvents = TracingEvents> {
   readonly #context: TracingSpanContext;
   readonly #events: TracingSpanEvent<TEvent>[] = [];
 
@@ -142,6 +147,22 @@ export class TracingSpan<TEvent extends Record<string, unknown> = any> {
     }
     return this;
   }
+
+  public log<
+    TName extends keyof StandardTracingEvents,
+    TPayload extends StandardTracingEvents[TName],
+  >(event: TName, payload: TPayload, time?: number): this;
+
+  public log<
+    TName extends keyof CustomTracingEvents,
+    TPayload extends CustomTracingEvents[TName],
+  >(event: TName, payload: TPayload, time?: number): this;
+
+  public log<TName extends keyof TEvent, TPayload extends TEvent[TName]>(
+    event: TName,
+    payload: TPayload,
+    time?: number,
+  ): this;
 
   public log<TName extends keyof TEvent, TPayload extends TEvent[TName]>(
     event: TName,
