@@ -42,11 +42,7 @@ export class RpcTracingLogger implements TracingLogger<ExecutionContext> {
     return span;
   }
 
-  onNext(
-    carrier: ExecutionContext,
-    span: TracingSpan<any, string>,
-    payload: unknown,
-  ): void {
+  onNext(carrier: ExecutionContext, span: TracingSpan, payload: unknown): void {
     if (carrier.getType() !== 'rpc') {
       return;
     }
@@ -54,11 +50,7 @@ export class RpcTracingLogger implements TracingLogger<ExecutionContext> {
     span.log('rpc.response', payload);
   }
 
-  onError(
-    carrier: ExecutionContext,
-    span: TracingSpan<any, string>,
-    error: unknown,
-  ): void {
+  onError(carrier: ExecutionContext, span: TracingSpan, error: unknown): void {
     if (carrier.getType() !== 'rpc') {
       return;
     }
@@ -66,7 +58,7 @@ export class RpcTracingLogger implements TracingLogger<ExecutionContext> {
     span.addTags({ error: true }).log('rpc.error', error);
   }
 
-  finalize(carrier: ExecutionContext, span: TracingSpan<any, string>): void {
+  finalize(carrier: ExecutionContext, span: TracingSpan): void {
     if (carrier.getType() !== 'rpc') {
       return;
     }

@@ -29,10 +29,10 @@ export type TracingSpanOptions = {
   tags?: TracingTags;
 };
 
-export class TracingService<TPayload = unknown, TEvent extends string = any> {
+export class TracingService<TEvent extends Record<string, unknown> = any> {
   private readonly serviceName: string;
   private readonly idFactory: TracingIdFactory;
-  private readonly reporter?: TracingReporter<TPayload, TEvent>;
+  private readonly reporter?: TracingReporter<TEvent>;
   private readonly tags: TracingTags;
 
   constructor(config: TracingConfig) {
@@ -45,7 +45,7 @@ export class TracingService<TPayload = unknown, TEvent extends string = any> {
   public startSpan(
     operation: string,
     options?: TracingSpanOptions,
-  ): TracingSpan<TPayload, TEvent> {
+  ): TracingSpan<TEvent> {
     return new TracingSpan(
       {
         serviceName: this.serviceName,
@@ -94,7 +94,7 @@ export class TracingService<TPayload = unknown, TEvent extends string = any> {
 
   private async onSpanEvent(
     context: TracingSpanContext,
-    event: TracingSpanEvent<TPayload, TEvent>,
+    event: TracingSpanEvent<TEvent>,
   ): Promise<void> {
     if (this.reporter) {
       await this.reporter.onEvent(context, event);
@@ -103,7 +103,7 @@ export class TracingService<TPayload = unknown, TEvent extends string = any> {
 
   private async onSpanFinish(
     context: TracingSpanContext,
-    events: TracingSpanEvent<TPayload, TEvent>[],
+    events: TracingSpanEvent<TEvent>[],
   ): Promise<void> {
     if (this.reporter) {
       await this.reporter.onFinish(context, events);
@@ -111,15 +111,15 @@ export class TracingService<TPayload = unknown, TEvent extends string = any> {
   }
 }
 
-export class TracingSpan<TPayload = unknown, TEvent extends string = any> {
+export class TracingSpan<TEvent extends Record<string, unknown> = any> {
   readonly #context: TracingSpanContext;
-  readonly #events: TracingSpanEvent<TPayload, TEvent>[] = [];
+  readonly #events: TracingSpanEvent<TEvent>[] = [];
 
   constructor(
     context: TracingSpanContext,
     onStart: TracingStartCallback,
-    private readonly onEvent: TracingEventCallback<TPayload, TEvent>,
-    private readonly onFinish: TracingFinishCallback<TPayload, TEvent>,
+    private readonly onEvent: TracingEventCallback<TEvent>,
+    private readonly onFinish: TracingFinishCallback<TEvent>,
   ) {
     this.#context = context;
     onStart(context);
@@ -129,7 +129,7 @@ export class TracingSpan<TPayload = unknown, TEvent extends string = any> {
     return this.#context;
   }
 
-  public get events(): readonly TracingSpanEvent<TPayload, TEvent>[] {
+  public get events(): readonly TracingSpanEvent<TEvent>[] {
     return this.#events;
   }
 
@@ -143,9 +143,13 @@ export class TracingSpan<TPayload = unknown, TEvent extends string = any> {
     return this;
   }
 
-  public log(event: TEvent, payload?: TPayload, time?: number): this {
+  public log<TName extends keyof TEvent, TPayload extends TEvent[TName]>(
+    event: TName,
+    payload: TPayload,
+    time?: number,
+  ): this {
     const eventTime = time ?? Date.now();
-    const log: TracingSpanEvent<TPayload, TEvent> = {
+    const log: TracingSpanEvent<TEvent> = {
       name: event,
       payload,
       time: eventTime,

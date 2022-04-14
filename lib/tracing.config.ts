@@ -6,12 +6,9 @@ export type TracingIdFactory = {
   newSpanId(): string;
 };
 
-export interface TracingConfig<
-  TPayload = unknown,
-  TEvent extends string = any,
-> {
+export interface TracingConfig<TEvent extends Record<string, unknown> = any> {
   serviceName: string;
   idFactory?: TracingIdFactory;
-  reporter?: TracingReporter<TPayload, TEvent>;
+  reporter?: TracingReporter<TEvent>;
   tags?: TracingTags;
 }
