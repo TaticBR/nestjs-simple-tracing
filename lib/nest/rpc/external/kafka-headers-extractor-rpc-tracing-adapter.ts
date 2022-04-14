@@ -4,6 +4,13 @@ import { AbstractRpcTracingAdapter } from '..';
 import { TracingGetter } from '../../..';
 
 export class KafkaHeadersExtractorRpcTracingAdapter extends AbstractRpcTracingAdapter<TracingGetter> {
+  private static readonly INSTANCE =
+    new KafkaHeadersExtractorRpcTracingAdapter();
+
+  private constructor() {
+    super();
+  }
+
   protected override _createResponse(
     argumentsHost: RpcArgumentsHost,
   ): TracingGetter | undefined {
@@ -21,5 +28,9 @@ export class KafkaHeadersExtractorRpcTracingAdapter extends AbstractRpcTracingAd
       const value = headers[key];
       return Buffer.isBuffer(value) ? value.toString() : value;
     };
+  }
+
+  public static getInstance(): KafkaHeadersExtractorRpcTracingAdapter {
+    return this.INSTANCE;
   }
 }

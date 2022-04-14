@@ -36,8 +36,8 @@ export function HttpTracing<TCarrier = ExecutionContext>(
     return applyDecorators(
       Tracing({
         extractor: new AdapterTracingExtractor(
-          new StandardTracingExtractor(),
-          new IncomingMessageHeadersExtractorHttpTracingAdapter(),
+          StandardTracingExtractor.getInstance(),
+          IncomingMessageHeadersExtractorHttpTracingAdapter.getInstance(),
         ),
         logger: new HttpTracingLogger(),
       }),
@@ -46,8 +46,8 @@ export function HttpTracing<TCarrier = ExecutionContext>(
 
   if (!options.adapter && !options.extractor) {
     options.extractor = new AdapterTracingExtractor(
-      new StandardTracingExtractor(),
-      new IncomingMessageHeadersExtractorHttpTracingAdapter(),
+      StandardTracingExtractor.getInstance(),
+      IncomingMessageHeadersExtractorHttpTracingAdapter.getInstance(),
     );
   }
   if (!options.logger) {

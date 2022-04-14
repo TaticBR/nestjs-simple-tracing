@@ -45,7 +45,7 @@ function createExtractor<TCarrier>(
   }
   if (options.adapter) {
     return new AdapterTracingExtractor(
-      new StandardTracingExtractor(),
+      StandardTracingExtractor.getInstance(),
       options.adapter,
     );
   }
