@@ -25,12 +25,15 @@ export interface DatabaseTracingTags {
   'db.user'?: string;
 }
 
-export type StandardTracingTags = CommonTracingTags &
-  SpanTracingTags &
-  HttpTracingTags &
-  RpcTracingTags &
-  DatabaseTracingTags;
+export interface StandardTracingTags
+  extends CommonTracingTags,
+    SpanTracingTags,
+    HttpTracingTags,
+    RpcTracingTags,
+    DatabaseTracingTags {}
 
-export type CustomTracingTags = Record<string, any>;
+export interface CustomTracingTags extends Record<string, unknown> {
+  // This interface is meant to be overridden by Declaration Merging
+}
 
-export type TracingTags = StandardTracingTags & CustomTracingTags;
+export interface TracingTags extends StandardTracingTags, CustomTracingTags {}
