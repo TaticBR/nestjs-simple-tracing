@@ -1,9 +1,13 @@
 import { TracingContextRef } from '../..';
-import { TracingInjector, TracingService, TracingSpanKind } from '../../..';
+import {
+  TracingInjector,
+  TracingService,
+  TracingSetter,
+  TracingSpanKind,
+} from '../../..';
 import {
   HttpClient,
   HttpRequestConfig,
-  HttpRequestHeaders,
   HttpResponse,
 } from './http-client.interface';
 
@@ -15,7 +19,7 @@ type RequestInfo = {
 
 export type TracingHttpClientConfig<TConfig> = {
   tracingService: TracingService;
-  tracingInjector: TracingInjector<HttpRequestHeaders>;
+  tracingInjector: TracingInjector<TracingSetter>;
   tracingContextRef: TracingContextRef;
   operation?: string;
   createConfig?: () => TConfig;
@@ -28,7 +32,7 @@ export class TracingHttpClient<
 > implements HttpClient<TConfig>
 {
   private readonly tracingService: TracingService;
-  private readonly tracingInjector: TracingInjector<HttpRequestHeaders>;
+  private readonly tracingInjector: TracingInjector<TracingSetter>;
   private readonly tracingContextRef: TracingContextRef;
   private readonly operation: string;
   private readonly createConfig: () => TConfig;
@@ -67,11 +71,12 @@ export class TracingHttpClient<
       try {
         const actualConfig = config ?? this.createConfig();
         actualConfig.headers ??= {};
+        const headers = actualConfig.headers;
 
         this.tracingService.inject(
           span.context,
           this.tracingInjector,
-          actualConfig.headers,
+          (key, value) => (headers[key] = value),
         );
         request = createRequest(actualConfig);
       } catch (error) {
