@@ -1,6 +1,6 @@
 {
   "name": "@taticbr/nestjs-simple-tracing",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Simple Tracing for NestJS",
   "license": "MIT",
   "author": "TaticBR",
