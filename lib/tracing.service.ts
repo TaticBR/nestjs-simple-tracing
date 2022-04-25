@@ -29,7 +29,7 @@ export const DEFAULT_ID_FACTORY: TracingIdFactory = {
 };
 
 export type TracingSpanOptions = {
-  parent?: TracingContext;
+  parent?: Partial<TracingContext>;
   startTime?: number;
   tags?: TracingTags;
 };
@@ -74,17 +74,16 @@ export class TracingService<TEvent extends TracingEvents = TracingEvents> {
   public extract<TCarrier>(
     extractor: TracingExtractor<TCarrier>,
     carrier: TCarrier,
-  ): TracingContext {
+  ): Partial<TracingContext> {
     const partialContext = extractor.extract(carrier);
     return {
       ...partialContext,
       traceId: partialContext?.traceId ?? this.idFactory.newTraceId(),
-      spanId: partialContext?.spanId ?? this.idFactory.newSpanId(),
     };
   }
 
   public inject<TCarrier>(
-    context: TracingContext,
+    context: Partial<TracingContext>,
     injector: TracingInjector<TCarrier>,
     carrier: TCarrier,
   ): void {

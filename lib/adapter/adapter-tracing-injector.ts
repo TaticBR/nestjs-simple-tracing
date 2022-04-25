@@ -17,7 +17,7 @@ export class AdapterTracingInjector<TCarrierIn, TCarrierOut>
       typeof adapter === 'function' ? adapter : adapter.adapt.bind(adapter);
   }
 
-  inject(context: TracingContext, carrier: TCarrierIn): void {
+  inject(context: Partial<TracingContext>, carrier: TCarrierIn): void {
     const adaptedCarrier = this.adapt(carrier);
     if (adaptedCarrier) {
       this.injector.inject(context, adaptedCarrier);

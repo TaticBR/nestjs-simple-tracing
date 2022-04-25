@@ -38,9 +38,14 @@ export class StandardTracingInjector implements TracingInjector<TracingSetter> {
 
   private constructor() {}
 
-  inject(context: TracingContext, carrier: TracingSetter): void {
+  inject(context: Partial<TracingContext>, carrier: TracingSetter): void {
+    if (!context.traceId) {
+      return;
+    }
     carrier(TRACE_ID_KEY, context.traceId);
-    carrier(SPAN_ID_KEY, context.spanId);
+    if (context.spanId) {
+      carrier(SPAN_ID_KEY, context.spanId);
+    }
     if (context.referenceId) {
       carrier(REFERENCE_ID_KEY, context.referenceId);
     }

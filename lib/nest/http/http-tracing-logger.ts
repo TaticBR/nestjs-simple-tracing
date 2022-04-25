@@ -12,7 +12,7 @@ export class HttpTracingLogger implements TracingLogger<ExecutionContext> {
   start(
     carrier: ExecutionContext,
     tracer: TracingService,
-    tracingContext: TracingContext,
+    tracingContext?: Partial<TracingContext>,
   ): TracingSpan | undefined {
     if (carrier.getType() !== 'http') {
       return;

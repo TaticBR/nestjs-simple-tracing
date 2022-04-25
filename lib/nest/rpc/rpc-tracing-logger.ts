@@ -19,7 +19,7 @@ export class RpcTracingLogger implements TracingLogger<ExecutionContext> {
   start(
     carrier: ExecutionContext,
     tracer: TracingService,
-    tracingContext: TracingContext,
+    tracingContext?: Partial<TracingContext>,
   ): TracingSpan | undefined {
     if (carrier.getType() !== 'rpc') {
       return;
