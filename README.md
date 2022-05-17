@@ -56,7 +56,7 @@ export class AppModule {}
 
 Use the `@HttpTracing()` or `@RpcTracing()` decorators to enable trace extraction and logging.
 
-Extraction and logging can be individualy disabled using the `@DisableTracingExtractor()` and `@DisableTracingLogger()` decorators.
+Extraction and logging can be disabled with the `@DisableTracing()` decorator. Extraction and logging can also be individualy disabled using the `@DisableTracingExtractor()` and `@DisableTracingLogger()` decorators.
 
 Additionaly, a span can be associated with a resource using the `@UseHttpTracingReferenceExtractor()` and `@RpcTracingReferenceExtractor()` decorators.
 

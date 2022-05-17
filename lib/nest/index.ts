@@ -1,6 +1,7 @@
 export * from './composite-tracing-extractor';
 export * from './disable-tracing-extractor.decorator';
 export * from './disable-tracing-logger.decorator';
+export * from './disable-tracing.decorator';
 export * from './tracing-context-ref.interface';
 export * from './tracing-decorator-options.interface';
 export * from './tracing-extractor.interceptor';
