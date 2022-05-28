@@ -41,4 +41,5 @@ export type TracingDecoratorOptions<TCarrier> =
 export type TracingReferenceExtractorOptions = {
   prefix?: string;
   suffix?: string;
+  override?: boolean;
 };

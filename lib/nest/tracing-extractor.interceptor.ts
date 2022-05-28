@@ -105,8 +105,8 @@ export class TracingExtractorInterceptor implements NestInterceptor {
     if (!extractTracingReference) {
       return;
     }
-    // Reference already exists
-    if (tracingContext.referenceId) {
+    // Reference already exists and override is disabled
+    if (tracingContext.referenceId && !tracingReferenceOptions?.override) {
       return;
     }
 
