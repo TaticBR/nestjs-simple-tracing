@@ -10,7 +10,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-import { TracingExtractor, TracingService } from '..';
+import {
+  TracingContext,
+  TracingExtractor,
+  TracingReferenceExtractorOptions,
+  TracingService,
+} from '..';
 import { TracingContextRef } from './tracing-context-ref.interface';
 import { TracingReferenceExtractor } from './tracing-reference-extract.interface';
 import {
@@ -19,6 +24,11 @@ import {
   TRACING_EXTRACTOR_KEY,
   TRACING_REFERENCE_EXTRACTOR_KEY,
 } from './tracing.constants';
+
+type TracingReferenceExtractorConfig = [
+  TracingReferenceExtractor<ExecutionContext>,
+  TracingReferenceExtractorOptions | undefined,
+];
 
 @Injectable({ scope: Scope.REQUEST })
 export class TracingExtractorInterceptor implements NestInterceptor {
@@ -41,31 +51,34 @@ export class TracingExtractorInterceptor implements NestInterceptor {
     }
 
     const tracingExtractor = this.reflector.getAllAndOverride<
-      TracingExtractor<ExecutionContext>
+      TracingExtractor<ExecutionContext> | undefined
     >(TRACING_EXTRACTOR_KEY, [context.getHandler(), context.getClass()]);
 
     if (tracingExtractor) {
+      const operation = `${context.getClass().name}.${
+        context.getHandler().name
+      }`;
+
       try {
         const tracingContext = this.tracingService.extract(
           tracingExtractor,
           context,
         );
 
-        const extractTracingReference = this.reflector.getAllAndOverride<
-          TracingReferenceExtractor<ExecutionContext> | undefined
-        >(TRACING_REFERENCE_EXTRACTOR_KEY, [
-          context.getHandler(),
-          context.getClass(),
-        ]);
-        if (extractTracingReference) {
-          tracingContext.referenceId = extractTracingReference(context);
+        try {
+          const referenceId = this.extractReferenceId(context, tracingContext);
+          if (referenceId) {
+            tracingContext.referenceId = referenceId;
+          }
+        } catch (err) {
+          this.#logger.error(
+            `Tracing reference extraction failed at ${operation}`,
+            err.stack,
+          );
         }
 
         this.tracingContextRef.context = tracingContext;
       } catch (err) {
-        const operation = `${context.getClass().name}.${
-          context.getHandler().name
-        }`;
         this.#logger.error(
           `Tracing extraction failed at ${operation}`,
           err.stack,
@@ -74,5 +87,37 @@ export class TracingExtractorInterceptor implements NestInterceptor {
     }
 
     return next.handle();
+  }
+
+  private extractReferenceId(
+    context: ExecutionContext,
+    tracingContext: Partial<TracingContext>,
+  ): string | undefined {
+    const [extractTracingReference, tracingReferenceOptions] =
+      this.reflector.getAllAndOverride<
+        TracingReferenceExtractorConfig | undefined
+      >(TRACING_REFERENCE_EXTRACTOR_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) ?? [];
+
+    // No extractor defined
+    if (!extractTracingReference) {
+      return;
+    }
+    // Reference already exists
+    if (tracingContext.referenceId) {
+      return;
+    }
+
+    const referenceId = extractTracingReference(context);
+    // No reference extracted
+    if (!referenceId) {
+      return;
+    }
+
+    const referencePrefix = tracingReferenceOptions?.prefix ?? '';
+    const referenceSuffix = tracingReferenceOptions?.suffix ?? '';
+    return `${referencePrefix}${referenceId}${referenceSuffix}`;
   }
 }

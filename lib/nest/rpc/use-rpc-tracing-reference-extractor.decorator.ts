@@ -1,5 +1,8 @@
 import { applyDecorators } from '@nestjs/common';
-import { UseTracingReferenceExtractor } from '..';
+import {
+  TracingReferenceExtractorOptions,
+  UseTracingReferenceExtractor,
+} from '..';
 import {
   RpcTracingRefereceExtractFunction,
   RpcTracingReferenceExtractor,
@@ -9,11 +12,15 @@ export function UseRpcTracingReferenceExtractor<TPayload, TContext>(
   extract:
     | RpcTracingRefereceExtractFunction<TPayload, TContext>
     | RpcTracingRefereceExtractFunction<TPayload, TContext>[],
+  options?: TracingReferenceExtractorOptions,
 ) {
   const extractFunctions = Array.isArray(extract) ? extract : [extract];
   const extractor = new RpcTracingReferenceExtractor(...extractFunctions);
 
   return applyDecorators(
-    UseTracingReferenceExtractor((carrier) => extractor.extract(carrier)),
+    UseTracingReferenceExtractor(
+      (carrier) => extractor.extract(carrier),
+      options,
+    ),
   );
 }

@@ -37,3 +37,8 @@ export type TracingLoggerOptions = {
 
 export type TracingDecoratorOptions<TCarrier> =
   TracingExtractorOptions<TCarrier> & TracingLoggerOptions;
+
+export type TracingReferenceExtractorOptions = {
+  prefix?: string;
+  suffix?: string;
+};
