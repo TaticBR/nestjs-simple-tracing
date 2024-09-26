@@ -45,7 +45,7 @@ export function HttpTracing<TCarrier = ExecutionContext>(
   }
 
   if (!options.adapter && !options.extractor) {
-    options.extractor = new AdapterTracingExtractor(
+    (options).extractor = new AdapterTracingExtractor(
       StandardTracingExtractor.getInstance(),
       IncomingMessageHeadersExtractorHttpTracingAdapter.getInstance(),
     );

@@ -25,7 +25,10 @@ export class KafkaHeadersExtractorRpcTracingAdapter extends AbstractRpcTracingAd
     }
 
     return (key: string): string | undefined => {
-      const value = headers[key];
+      let value = headers[key];
+      if (Array.isArray(value)) {
+        value = value[0];
+      }
       return Buffer.isBuffer(value) ? value.toString() : value;
     };
   }
