@@ -12,11 +12,13 @@ import { Reflector } from '@nestjs/core';
 import { MonoTypeOperatorFunction, Observable, tap } from 'rxjs';
 import { TracingService, TracingSpan } from '..';
 import { TracingContextRef } from './tracing-context-ref.interface';
+import { TracingOperationOptions } from './tracing-decorator-options.interface';
 import { TracingLogger } from './tracing-logger.interface';
 import {
   DISABLE_TRACING_LOGGER_KEY,
   TRACING_CONTEXT,
   TRACING_LOGGER_KEY,
+  TRACING_OPERATION_KEY,
 } from './tracing.constants';
 
 @Injectable({ scope: Scope.REQUEST })
@@ -40,7 +42,7 @@ export class TracingLoggerInterceptor implements NestInterceptor {
     }
 
     const tracingLogger = this.reflector.getAllAndOverride<
-      TracingLogger<ExecutionContext>
+      TracingLogger<ExecutionContext> | undefined
     >(TRACING_LOGGER_KEY, [context.getHandler(), context.getClass()]);
 
     if (tracingLogger) {
@@ -48,11 +50,17 @@ export class TracingLoggerInterceptor implements NestInterceptor {
         context.getHandler().name
       }`;
 
+      // TODO: Consider using reflector.getAllAndMerge
+      const operationOptions = this.reflector.getAllAndOverride<
+        TracingOperationOptions | undefined
+      >(TRACING_OPERATION_KEY, [context.getHandler(), context.getClass()]);
+
       try {
         const span = tracingLogger.start(
           context,
           this.tracingService,
           this.tracingContextRef.context,
+          operationOptions,
         );
 
         if (span) {

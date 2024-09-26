@@ -7,7 +7,7 @@ import {
   RmqContext,
   TcpContext,
 } from '@nestjs/microservices';
-import { TracingLogger } from '..';
+import { TracingLogger, TracingOperationOptions } from '..';
 import {
   TracingContext,
   TracingService,
@@ -20,12 +20,13 @@ export class RpcTracingLogger implements TracingLogger<ExecutionContext> {
     carrier: ExecutionContext,
     tracer: TracingService,
     tracingContext?: Partial<TracingContext>,
+    options?: TracingOperationOptions,
   ): TracingSpan | undefined {
     if (carrier.getType() !== 'rpc') {
       return;
     }
 
-    const operation = `${carrier.getClass().name}.${carrier.getHandler().name}`;
+    const operation = options?.operation || `${carrier.getClass().name}.${carrier.getHandler().name}`;
     const rpc = carrier.switchToRpc();
     const context = rpc.getContext();
 
@@ -34,6 +35,7 @@ export class RpcTracingLogger implements TracingLogger<ExecutionContext> {
     const span = tracer.startSpan(operation, {
       parent: tracingContext,
       tags: {
+        ...options?.tags,
         'span.kind': TracingSpanKind.RPC,
         'rpc.pattern': pattern,
       },

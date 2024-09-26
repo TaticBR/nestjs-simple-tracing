@@ -5,6 +5,7 @@ import {
   TracingGetter,
   TracingLogger,
 } from '..';
+import { TracingTags } from '../tracing-tags.interface';
 
 export type ExtractorAndAdapterOptions<TCarrier> = {
   extractor: TracingExtractor<TCarrier>;
@@ -37,6 +38,11 @@ export type TracingLoggerOptions = {
 
 export type TracingDecoratorOptions<TCarrier> =
   TracingExtractorOptions<TCarrier> & TracingLoggerOptions;
+
+export type TracingOperationOptions = {
+  operation?: string;
+  tags?: TracingTags;
+};
 
 export type TracingReferenceExtractorOptions = {
   prefix?: string;

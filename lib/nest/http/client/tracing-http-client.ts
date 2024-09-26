@@ -4,6 +4,7 @@ import {
   TracingService,
   TracingSetter,
   TracingSpanKind,
+  TracingTags,
 } from '../../..';
 import {
   HttpClient,
@@ -22,6 +23,7 @@ export type TracingHttpClientConfig<TConfig> = {
   tracingInjector: TracingInjector<TracingSetter>;
   tracingContextRef: TracingContextRef;
   operation?: string;
+  tags?: TracingTags;
   createConfig?: () => TConfig;
   getUrl?: (url: string, config?: TConfig) => string;
   getErrorStatusCode?: (error: any) => number;
@@ -35,6 +37,7 @@ export class TracingHttpClient<
   private readonly tracingInjector: TracingInjector<TracingSetter>;
   private readonly tracingContextRef: TracingContextRef;
   private readonly operation: string;
+  private readonly tags?: TracingTags;
   private readonly createConfig: () => TConfig;
   private readonly getUrl: (url: string, config?: TConfig) => string;
   private readonly getErrorStatusCode: (error: any) => number;
@@ -47,6 +50,7 @@ export class TracingHttpClient<
     this.tracingInjector = config.tracingInjector;
     this.tracingContextRef = config.tracingContextRef;
     this.operation = config.operation ?? 'http-request';
+    this.tags = config.tags;
     this.createConfig = config.createConfig ?? this.createConfigFallback;
     this.getUrl = config.getUrl ?? this.getUrlFallback;
     this.getErrorStatusCode =
@@ -61,6 +65,7 @@ export class TracingHttpClient<
     const span = this.tracingService.startSpan(this.operation, {
       parent: this.tracingContextRef.context,
       tags: {
+        ...this.tags,
         'span.kind': TracingSpanKind.HTTP,
         'http.url': this.getUrl(info.url, config),
         'http.method': info.method,

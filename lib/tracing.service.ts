@@ -180,6 +180,9 @@ export class TracingSpan<TEvent extends TracingEvents = TracingEvents> {
   }
 
   public finish(finishTime?: number): Promise<void> | void {
+    if (this.#context.finishTime) {
+      return;
+    }
     this.#context.finishTime = finishTime ?? Date.now();
     return this.onFinish(this.context, this.#events);
   }

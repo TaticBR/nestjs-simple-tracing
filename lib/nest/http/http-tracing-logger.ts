@@ -1,6 +1,6 @@
 import { ExecutionContext } from '@nestjs/common';
 import type { IncomingMessage, ServerResponse } from 'http';
-import { TracingLogger } from '..';
+import { TracingLogger, TracingOperationOptions } from '..';
 import {
   TracingContext,
   TracingService,
@@ -13,17 +13,19 @@ export class HttpTracingLogger implements TracingLogger<ExecutionContext> {
     carrier: ExecutionContext,
     tracer: TracingService,
     tracingContext?: Partial<TracingContext>,
+    options?: TracingOperationOptions,
   ): TracingSpan | undefined {
     if (carrier.getType() !== 'http') {
       return;
     }
 
-    const operation = `${carrier.getClass().name}.${carrier.getHandler().name}`;
+    const operation = options?.operation || `${carrier.getClass().name}.${carrier.getHandler().name}`;
     const request = carrier.switchToHttp().getRequest<IncomingMessage>();
 
     const span = tracer.startSpan(operation, {
       parent: tracingContext,
       tags: {
+        ...options?.tags,
         'span.kind': TracingSpanKind.HTTP,
         'http.url': this.getRequestUrl(request),
         'http.method': request.method,
@@ -56,10 +58,12 @@ export class HttpTracingLogger implements TracingLogger<ExecutionContext> {
     response.once('finish', () => {
       span.addTags({
         'http.status_code': response.statusCode,
-        error: true,
       });
-      span.log('http.response.error', error);
     });
+    span.addTags({
+      error: true,
+    })
+    span.log('http.response.error', error);
   }
 
   finalize(carrier: ExecutionContext, span: TracingSpan): void {
@@ -69,6 +73,9 @@ export class HttpTracingLogger implements TracingLogger<ExecutionContext> {
 
     const response = carrier.switchToHttp().getResponse<ServerResponse>();
     response.once('finish', () => {
+      span.finish();
+    });
+    response.once('close', () => {
       span.finish();
     });
   }

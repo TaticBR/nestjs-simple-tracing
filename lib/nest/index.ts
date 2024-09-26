@@ -7,6 +7,7 @@ export * from './tracing-decorator-options.interface';
 export * from './tracing-extractor.interceptor';
 export * from './tracing-logger.interceptor';
 export * from './tracing-logger.interface';
+export * from './tracing-operation.decorator';
 export * from './tracing-reference-extract.interface';
 export * from './tracing.constants';
 export * from './tracing.decorator';
@@ -14,5 +15,6 @@ export * from './tracing.module';
 export * from './use-tracing-extractor.decorator';
 export * from './use-tracing-logger.decorator';
 export * from './use-tracing-reference-extractor.decorator';
+
 export * from './http';
 export * from './rpc';
