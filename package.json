@@ -11,7 +11,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/TaticBR/nestjs-simple-tracing"
+    "url": "git+https://github.com/TaticBR/nestjs-simple-tracing.git"
   },
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
