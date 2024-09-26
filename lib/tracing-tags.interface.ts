@@ -6,6 +6,7 @@ export interface CommonTracingTags {
 
 export interface SpanTracingTags {
   'span.kind'?: TracingSpanKind | Omit<string, TracingSpanKind>;
+  'span.retriable'?: boolean;
 }
 
 export interface HttpTracingTags {
