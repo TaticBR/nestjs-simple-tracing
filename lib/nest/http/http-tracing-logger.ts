@@ -55,15 +55,15 @@ export class HttpTracingLogger implements TracingLogger<ExecutionContext> {
     }
 
     const response = carrier.switchToHttp().getResponse<ServerResponse>();
+    span.addTags({
+      error: true,
+    })
+    span.log('http.response.error', error);
     response.once('finish', () => {
       span.addTags({
         'http.status_code': response.statusCode,
       });
     });
-    span.addTags({
-      error: true,
-    })
-    span.log('http.response.error', error);
   }
 
   finalize(carrier: ExecutionContext, span: TracingSpan): void {
